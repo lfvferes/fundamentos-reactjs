@@ -10,7 +10,7 @@ import Upload from '../../components/Upload';
 import { Container, Title, ImportFileContainer, Footer } from './styles';
 
 import alert from '../../assets/alert.svg';
-import api from '../../services/api';
+import api, { configFormData } from '../../services/api';
 
 interface FileProps {
   file: File;
@@ -23,19 +23,37 @@ const Import: React.FC = () => {
   const history = useHistory();
 
   async function handleUpload(): Promise<void> {
-    // const data = new FormData();
+    if (uploadedFiles.length !== 1) return;
 
-    // TODO
+    const data = new FormData();
+
+    uploadedFiles.map(uploadFile =>
+      data.append('file', uploadFile.file, uploadFile.name),
+    );
 
     try {
-      // await api.post('/transactions/import', data);
+      const response = await api.post(
+        '/transactions/import',
+        data,
+        configFormData,
+      );
+
+      if (response.status === 200) {
+        history.push('/');
+      }
     } catch (err) {
-      // console.log(err.response.error);
+      console.log(err.response.error);
     }
   }
 
   function submitFile(files: File[]): void {
-    // TODO
+    const uploadFiles = files.map<FileProps>(file => ({
+      file,
+      name: file.name,
+      readableSize: filesize(file.size),
+    }));
+
+    setUploadedFiles(uploadFiles);
   }
 
   return (
